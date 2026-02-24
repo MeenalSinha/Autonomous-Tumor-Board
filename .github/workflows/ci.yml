@@ -1,0 +1,98 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master, dev ]
+  pull_request:
+    branches: [ main, master, dev ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Verify project structure
+      run: |
+        echo "Checking project structure..."
+        test -f requirements.txt
+        test -d agents
+        test -d models
+        test -d orchestrator
+        test -d utils
+        test -f app.py
+        test -f api.py
+        test -f test_system.py
+        echo "✓ Project structure verified"
+    
+    - name: Check Python syntax
+      run: |
+        echo "Checking Python syntax..."
+        python -m py_compile agents/*.py
+        python -m py_compile models/*.py
+        python -m py_compile orchestrator/*.py
+        python -m py_compile utils/*.py
+        python -m py_compile app.py
+        python -m py_compile api.py
+        python -m py_compile test_system.py
+        echo "✓ Python syntax check passed"
+    
+    - name: Import test
+      run: |
+        echo "Testing imports..."
+        python -c "from models.case_models import PatientCase, TumorBoardReport"
+        python -c "from agents import PathologyAgent, ImagingAgent, GuidelineAgent"
+        python -c "from orchestrator import TumorBoardOrchestrator"
+        echo "✓ Import test passed"
+    
+    - name: Run basic functionality test
+      run: |
+        echo "Running basic test..."
+        python -c "
+from models.case_models import PatientCase
+case = PatientCase(
+    case_id='TEST-001',
+    age=65,
+    gender='Male',
+    primary_site='lung',
+    clinical_history='Test case'
+)
+print('✓ PatientCase model working')
+
+from agents import PathologyAgent
+agent = PathologyAgent()
+print('✓ PathologyAgent initialized')
+        "
+        echo "✓ Basic functionality test passed"
+    
+    - name: Verify documentation
+      run: |
+        echo "Checking documentation..."
+        test -f README.md
+        test -f SETUP_GUIDE.md
+        test -f FEATURES.md
+        test -f LICENSE
+        echo "✓ Documentation verified"
+    
+    - name: Summary
+      run: |
+        echo "================================"
+        echo "✅ All CI checks passed!"
+        echo "================================"
+        echo "✓ Project structure valid"
+        echo "✓ Python syntax correct"
+        echo "✓ Imports working"
+        echo "✓ Basic functionality verified"
+        echo "✓ Documentation present"
+        echo "================================"

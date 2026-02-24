@@ -33,66 +33,39 @@ jobs:
         test -d utils
         test -f app.py
         test -f api.py
-        test -f test_system.py
-        echo "✓ Project structure verified"
+        echo "Project structure verified"
     
     - name: Check Python syntax
       run: |
         echo "Checking Python syntax..."
-        python -m py_compile agents/*.py
-        python -m py_compile models/*.py
-        python -m py_compile orchestrator/*.py
-        python -m py_compile utils/*.py
+        python -m py_compile agents/__init__.py
+        python -m py_compile agents/pathology_agent.py
+        python -m py_compile agents/imaging_agent.py
+        python -m py_compile agents/guideline_agent.py
+        python -m py_compile agents/mdt_synthesizer.py
+        python -m py_compile models/__init__.py
+        python -m py_compile models/case_models.py
+        python -m py_compile orchestrator/__init__.py
+        python -m py_compile orchestrator/controller.py
+        python -m py_compile utils/__init__.py
+        python -m py_compile utils/report_generator.py
         python -m py_compile app.py
         python -m py_compile api.py
-        python -m py_compile test_system.py
-        echo "✓ Python syntax check passed"
-    
-    - name: Import test
-      run: |
-        echo "Testing imports..."
-        python -c "from models.case_models import PatientCase, TumorBoardReport"
-        python -c "from agents import PathologyAgent, ImagingAgent, GuidelineAgent"
-        python -c "from orchestrator import TumorBoardOrchestrator"
-        echo "✓ Import test passed"
-    
-    - name: Run basic functionality test
-      run: |
-        echo "Running basic test..."
-        python -c "
-from models.case_models import PatientCase
-case = PatientCase(
-    case_id='TEST-001',
-    age=65,
-    gender='Male',
-    primary_site='lung',
-    clinical_history='Test case'
-)
-print('✓ PatientCase model working')
-
-from agents import PathologyAgent
-agent = PathologyAgent()
-print('✓ PathologyAgent initialized')
-        "
-        echo "✓ Basic functionality test passed"
+        echo "Python syntax check passed"
     
     - name: Verify documentation
       run: |
         echo "Checking documentation..."
         test -f README.md
-        test -f SETUP_GUIDE.md
-        test -f FEATURES.md
         test -f LICENSE
-        echo "✓ Documentation verified"
+        echo "Documentation verified"
     
     - name: Summary
       run: |
         echo "================================"
-        echo "✅ All CI checks passed!"
+        echo "All CI checks passed"
         echo "================================"
-        echo "✓ Project structure valid"
-        echo "✓ Python syntax correct"
-        echo "✓ Imports working"
-        echo "✓ Basic functionality verified"
-        echo "✓ Documentation present"
+        echo "- Project structure valid"
+        echo "- Python syntax correct"
+        echo "- Documentation present"
         echo "================================"

@@ -3,27 +3,34 @@ FastAPI Backend for Autonomous Tumor Board System
 Provides REST API endpoints for case submission and report generation.
 """
 
-from fastapi import FastAPI, HTTPException, File, UploadFile
+from fastapi import FastAPI, HTTPException, File, UploadFile, Depends
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, ValidationError
-from typing import Optional, Dict
+from typing import Optional, Dict, List
 import json
 import os
+import re
 from datetime import datetime
 import uuid
+from sqlalchemy.orm import Session
 
 from models.case_models import PatientCase, TumorBoardReport
+from models.database import PatientCaseDB, TumorBoardReportDB
 from orchestrator import TumorBoardOrchestrator
 from utils.report_generator import TumorBoardReportGenerator
+from utils.db_manager import get_db, init_db
 
 
 # Initialize FastAPI app
 app = FastAPI(
     title="Autonomous Tumor Board API",
     description="AI-assisted multidisciplinary tumor board preparation system",
-    version="1.0.0"
+    version="1.1.0"
 )
+
+# Initialize database
+init_db()
 
 # Add CORS middleware
 app.add_middleware(
@@ -34,8 +41,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Initialize orchestrator and report generator
-orchestrator = TumorBoardOrchestrator()
+# Initialize report generator
 report_generator = TumorBoardReportGenerator()
 
 # Ensure directories exist
@@ -51,12 +57,16 @@ class CaseSubmission(BaseModel):
     clinical_history: str
 
 
+def sanitize_filename(filename: str) -> str:
+    return re.sub(r'[^a-zA-Z0-9._-]', '_', filename)
+
+
 @app.get("/")
 async def root():
     """Root endpoint with API information"""
     return {
         "name": "Autonomous Tumor Board API",
-        "version": "1.0.0",
+        "version": "1.1.0",
         "status": "operational",
         "endpoints": {
             "health": "/health",
@@ -84,22 +94,25 @@ async def health_check():
 
 
 @app.post("/api/cases/submit")
-async def submit_case(case: CaseSubmission) -> Dict:
+async def submit_case(case: CaseSubmission, db: Session = Depends(get_db)) -> Dict:
     """
-    Submit a new case for tumor board analysis.
-    
-    Args:
-        case: CaseSubmission with patient information
-        
-    Returns:
-        Dict containing case_id and report data
+    Submit a new case for tumor board analysis with DB persistence.
     """
     
     try:
-        # Generate unique case ID
         case_id = f"TB-{datetime.now().strftime('%Y%m%d')}-{str(uuid.uuid4())[:8].upper()}"
         
-        # Create PatientCase object
+        # Save case to DB
+        db_case = PatientCaseDB(
+            case_id=case_id,
+            age=case.age,
+            gender=case.gender,
+            primary_site=case.primary_site,
+            clinical_history=case.clinical_history
+        )
+        db.add(db_case)
+        db.commit()
+
         patient_case = PatientCase(
             case_id=case_id,
             age=case.age,
@@ -108,38 +121,23 @@ async def submit_case(case: CaseSubmission) -> Dict:
             clinical_history=case.clinical_history
         )
         
-        # Process through orchestrator
+        # Process through orchestrator with DB session
+        orchestrator = TumorBoardOrchestrator(db_session=db)
         report = orchestrator.process_case(patient_case)
         
-        # Save JSON report
-        json_path = f"data/outputs/{case_id}_report.json"
-        with open(json_path, 'w') as f:
-            json.dump(report.dict(), f, indent=2, default=str)
-        
-        # Generate PDF report
+        # PDF generation logic remains
         pdf_path = f"data/outputs/{case_id}_report.pdf"
         report_generator.generate_pdf(report, pdf_path)
-        
-        # Get execution summary
-        exec_summary = orchestrator.get_execution_summary()
         
         return {
             "success": True,
             "case_id": case_id,
-            "message": "Case processed successfully",
-            "execution_time": exec_summary,
-            "report": report.dict(),
-            "files": {
-                "json": json_path,
-                "pdf": pdf_path
-            },
-            "disclaimer": report.disclaimer
+            "report": report.dict()
         }
         
-    except ValidationError as e:
-        raise HTTPException(status_code=400, detail=f"Validation error: {str(e)}")
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Processing error: {str(e)}")
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.get("/api/reports/{case_id}")
@@ -199,28 +197,16 @@ async def download_pdf(case_id: str):
 
 @app.post("/api/upload/pathology")
 async def upload_pathology(file: UploadFile = File(...)):
-    """
-    Upload pathology file (placeholder - would process actual images in production).
+    """Securely upload pathology file"""
+    safe_name = sanitize_filename(file.filename)
+    file_path = f"data/uploads/{safe_name}"
+    os.makedirs("data/uploads", exist_ok=True)
     
-    Args:
-        file: Uploaded file
-        
-    Returns:
-        Dict with upload confirmation
-    """
-    
-    # Save file
-    file_path = f"data/uploads/{file.filename}"
     with open(file_path, "wb") as f:
         content = await file.read()
         f.write(content)
     
-    return {
-        "success": True,
-        "filename": file.filename,
-        "path": file_path,
-        "message": "File uploaded successfully. In production, this would be processed by vision models."
-    }
+    return {"success": True, "filename": safe_name}
 
 
 @app.post("/api/upload/imaging")

@@ -41,12 +41,13 @@ class TumorBoardOrchestrator:
     All intermediate outputs are preserved for transparency.
     """
     
-    def __init__(self):
-        """Initialize all agents"""
+    def __init__(self, db_session=None):
+        """Initialize all agents and database session"""
         self.pathology_agent = PathologyAgent()
         self.imaging_agent = ImagingAgent()
         self.guideline_agent = GuidelineAgent()
         self.synthesizer_agent = MDTSynthesizerAgent()
+        self.db = db_session
         
         # Track execution metrics
         self.execution_times = {}
@@ -116,6 +117,19 @@ class TumorBoardOrchestrator:
             guidelines=guideline_recommendations,
             synthesis=mdt_synthesis
         )
+        
+        # PERSISTENCE
+        if self.db:
+            from models.database import TumorBoardReportDB
+            db_report = TumorBoardReportDB(
+                case_id=report.case_id,
+                pathology_data=pathology_findings.dict(),
+                imaging_data=imaging_findings.dict(),
+                guideline_data=guideline_recommendations.dict(),
+                synthesis_data=mdt_synthesis.dict()
+            )
+            self.db.add(db_report)
+            self.db.commit()
         
         total_time = sum(self.execution_times.values())
         print(f"\n{'='*60}")

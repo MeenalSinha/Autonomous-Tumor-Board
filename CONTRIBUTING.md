@@ -91,10 +91,11 @@ We encourage contributions for:
 ## 📞 Questions?
 
 Open an issue with the `question` label or refer to existing documentation:
-- README.md - Overview
-- SETUP_GUIDE.md - Setup instructions
-- FEATURES.md - Feature documentation
-- IMPROVEMENTS.md - Recent enhancements
+- README.md - Project Overview
+- docs/SETUP.md - Detailed setup instructions
+- docs/ARCHITECTURE.md - Technical architecture
+- docs/API.md - REST interface reference
+- CHANGELOG.md - Version history
 
 ---
 

@@ -1,0 +1,40 @@
+{
+  "lung_nccn": {
+    "adenocarcinoma": {
+      "stage_i": {
+        "treatment": "Surgical resection (Lobectomy preferred)",
+        "options": ["Lobectomy + LN dissection", "SBRT for inoperable candidates"],
+        "evidence": "Category 1"
+      },
+      "stage_ii": {
+        "treatment": "Surgical resection followed by adjuvant chemotherapy",
+        "options": ["Lobectomy", "Cisplatin-based chemotherapy"],
+        "evidence": "Category 1"
+      },
+      "stage_iii": {
+        "treatment": "Multimodal therapy",
+        "options": ["Neoadjuvant chemoimmunotherapy", "Concurrent chemoradiation", "Durvalumab consolidation"],
+        "evidence": "Category 2A"
+      },
+      "stage_iv": {
+        "treatment": "Systemic therapy and palliative care",
+        "options": ["Targeted therapy (if mutation present)", "Immunotherapy", "Chemotherapy"],
+        "evidence": "Category 1"
+      }
+    }
+  },
+  "breast_nccn": {
+    "idc": {
+      "stage_i": {
+        "treatment": "Lumpectomy + Radiation or Mastectomy",
+        "options": ["Breast conserving surgery", "Sentinel LN biopsy"],
+        "evidence": "Category 1"
+      },
+      "stage_ii": {
+        "treatment": "Surgery and systemic therapy",
+        "options": ["Mastectomy or Lumpectomy", "Adjuvant chemo", "Endocrine therapy"],
+        "evidence": "Category 1"
+      }
+    }
+  }
+}

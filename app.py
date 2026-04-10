@@ -16,46 +16,137 @@ from utils.report_generator import TumorBoardReportGenerator
 
 # Page configuration
 st.set_page_config(
-    page_title="Autonomous Tumor Board",
+    page_title="Autonomous Tumor Board | Agentic MDT",
     page_icon="🏥",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS
+# Premium Custom CSS
 st.markdown("""
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
 <style>
-    .main-header {
-        font-size: 2.5rem;
-        color: #1a237e;
-        text-align: center;
-        margin-bottom: 1rem;
+    /* Global Styles */
+    .main {
+        background-color: #f8fafd;
+        font-family: 'Inter', sans-serif;
     }
+    
+    h1, h2, h3, .main-header {
+        font-family: 'Outfit', sans-serif;
+        font-weight: 700;
+        color: #0f172a;
+    }
+
+    /* Main Container Padding */
+    .block-container {
+        padding-top: 2rem;
+        padding-bottom: 2rem;
+    }
+
+    /* Header Styling */
+    .header-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        padding: 3rem 2rem;
+        background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+        border-radius: 24px;
+        margin-bottom: 2.5rem;
+        color: white;
+        box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.2);
+    }
+    
+    .header-title {
+        font-size: 3rem;
+        font-weight: 800;
+        margin: 0;
+        letter-spacing: -0.02em;
+    }
+    
+    .header-subtitle {
+        font-size: 1.1rem;
+        opacity: 0.9;
+        margin-top: 0.5rem;
+        font-weight: 400;
+    }
+
+    /* Card Styling */
+    .stCard, .metric-card, .agent-output {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 16px;
+        border: 1px solid #eef2f6;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .stCard:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Warning & Success Boxes */
     .warning-box {
-        background-color: #fff3cd;
-        border-left: 5px solid #ff9800;
-        padding: 1rem;
-        margin: 1rem 0;
-        border-radius: 4px;
+        background-color: #fff9eb;
+        border-left: 6px solid #f59e0b;
+        padding: 1.5rem;
+        margin: 1.5rem 0;
+        border-radius: 12px;
+        color: #92400e;
     }
+    
     .success-box {
-        background-color: #d4edda;
-        border-left: 5px solid #28a745;
-        padding: 1rem;
-        margin: 1rem 0;
-        border-radius: 4px;
+        background-color: #f0fdf4;
+        border-left: 6px solid #22c55e;
+        padding: 1.5rem;
+        margin: 1.5rem 0;
+        border-radius: 12px;
+        color: #166534;
     }
-    .metric-card {
-        background-color: #f8f9fa;
-        padding: 1rem;
-        border-radius: 8px;
-        border: 1px solid #dee2e6;
+
+    /* Custom Button Styling */
+    .stButton>button {
+        border-radius: 12px;
+        font-weight: 600;
+        padding: 0.6rem 1.5rem;
+        border: none;
+        transition: all 0.2s ease;
     }
-    .agent-output {
-        background-color: #e3f2fd;
-        padding: 1rem;
-        border-radius: 4px;
-        margin: 0.5rem 0;
+    
+    .stButton>button[kind="primary"] {
+        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+        box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.3);
+    }
+    
+    .stButton>button[kind="primary"]:hover {
+        box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.4);
+        transform: scale(1.02);
+    }
+
+    /* Metric Styling */
+    [data-testid="stMetricValue"] {
+        font-family: 'Outfit', sans-serif;
+        font-weight: 700;
+        color: #2563eb;
+    }
+
+    /* Sidebar Styling */
+    .css-1d391kg {
+        background-color: #ffffff;
+    }
+    
+    /* Animations */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .fade-in {
+        animation: fadeIn 0.5s ease-out forwards;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -77,20 +168,24 @@ def main():
     initialize_session_state()
     
     # Header
-    st.markdown('<h1 class="main-header">🏥 Autonomous Tumor Board</h1>', unsafe_allow_html=True)
-    st.markdown('<p style="text-align: center; color: #666;">AI-Assisted Multidisciplinary Tumor Board Preparation</p>', unsafe_allow_html=True)
+    st.markdown(f"""
+    <div class="header-container fade-in">
+        <h1 class="header-title">🏥 Autonomous Tumor Board</h1>
+        <p class="header-subtitle">Next-Generation AI Intelligence for Multidisciplinary Clinical Support</p>
+    </div>
+    """, unsafe_allow_html=True)
     
     # Critical disclaimer
     st.markdown("""
-    <div class="warning-box">
-        <h3>⚠️ IMPORTANT DISCLAIMER</h3>
-        <p><strong>This system is a DRAFT PREPARATION TOOL ONLY</strong></p>
-        <ul>
-            <li>Does NOT make diagnostic or treatment decisions</li>
-            <li>REQUIRES human clinician review</li>
-            <li>NOT a substitute for multidisciplinary team discussion</li>
-            <li>For educational and research purposes</li>
-        </ul>
+    <div class="warning-box fade-in">
+        <h3 style="margin-top:0;">🛡️ Clinical Safety Protocol</h3>
+        <p><strong>This system is a DRAFT PREPARATION TOOL ONLY.</strong></p>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.9rem;">
+            <div>• Does NOT make diagnostic decisions</div>
+            <div>• REQUIRES senior clinician validation</div>
+            <div>• NOT a substitute for MDT discussion</div>
+            <div>• Research and Educational use only</div>
+        </div>
     </div>
     """, unsafe_allow_html=True)
     
@@ -122,12 +217,16 @@ def main():
 def show_submit_case_page():
     """Show case submission form"""
     
-    st.header("📋 Submit New Case")
+    st.markdown('<div class="fade-in">', unsafe_allow_html=True)
+    st.header("📋 Submit New Clinical Case")
     
     st.markdown("""
-    Enter de-identified patient information below. The system will analyze the case 
-    using multiple AI agents and generate a draft tumor board report.
-    """)
+    <p style="font-size: 1.1rem; color: #475569; margin-bottom: 2rem;">
+    Input de-identified patient data to initiate the agentic MDT pipeline. 
+    The system will orchestrate Pathology, Imaging, and Guideline agents to generate 
+    a comprehensive consensus report.
+    </p>
+    """, unsafe_allow_html=True)
     
     with st.form("case_submission_form"):
         col1, col2 = st.columns(2)
@@ -166,6 +265,8 @@ def show_submit_case_page():
         st.session_state.report = None
         st.session_state.case_id = None
         st.rerun()
+    
+    st.markdown('</div>', unsafe_allow_html=True)
 
 
 def process_case(age: int, gender: str, primary_site: str, clinical_history: str):
@@ -260,14 +361,31 @@ def show_view_report_page():
     
     report = st.session_state.report
     
-    # Report header
+    # Report header in cards
+    st.markdown('<div class="fade-in">', unsafe_allow_html=True)
     col1, col2, col3 = st.columns(3)
     with col1:
-        st.metric("Case ID", report.case_id)
+        st.markdown(f"""
+        <div class="metric-card">
+            <p style="margin:0; font-size: 0.9rem; color: #64748b;">CASE IDENTIFIER</p>
+            <h2 style="margin:0; color: #2563eb;">{report.case_id}</h2>
+        </div>
+        """, unsafe_allow_html=True)
     with col2:
-        st.metric("Stage", report.guidelines.stage_estimate.split('(')[0].strip())
+        st.markdown(f"""
+        <div class="metric-card">
+            <p style="margin:0; font-size: 0.9rem; color: #64748b;">DIAGNOSTIC STAGE</p>
+            <h2 style="margin:0; color: #2563eb;">{report.guidelines.stage_estimate.split('(')[0].strip()}</h2>
+        </div>
+        """, unsafe_allow_html=True)
     with col3:
-        st.metric("Confidence", report.synthesis.confidence.value)
+        st.markdown(f"""
+        <div class="metric-card">
+            <p style="margin:0; font-size: 0.9rem; color: #64748b;">SYSTEM CONFIDENCE</p>
+            <h2 style="margin:0; color: #2563eb;">{report.synthesis.confidence.value}</h2>
+        </div>
+        """, unsafe_allow_html=True)
+    st.markdown('<br>', unsafe_allow_html=True)
     
     # Tabs for different sections
     tabs = st.tabs([
@@ -474,6 +592,8 @@ def show_view_report_page():
                         file_name=f"{report.case_id}_report.pdf",
                         mime="application/pdf"
                     )
+    
+    st.markdown('</div>', unsafe_allow_html=True)
 
 
 def show_system_info_page():
